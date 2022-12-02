@@ -1,0 +1,241 @@
+from tokenize import TokenError
+from django.conf import settings
+from django.shortcuts import render
+from rest_framework.views import APIView
+from rest_framework import generics, status
+from .serializers import (
+    RegisterSerializer,
+    FormRegisterSerializer,
+    LoginSerializer,
+    ResetPasswordEmailRequestSerializer,
+    SetNewPasswordSerializer,
+)
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenRefreshView
+from django.contrib.sites.shortcuts import get_current_site
+from django.urls import reverse
+import jwt
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.encoding import smart_str, force_bytes, force_str, smart_bytes, DjangoUnicodeDecodeError
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from rest_framework.viewsets import ModelViewSet
+from .utils import Util
+from .models import Account
+from .services import Service
+
+
+class RegisterView(APIView):
+    @swagger_auto_schema(request_body=FormRegisterSerializer)
+    def post(self, request):
+        data = request.data
+
+        user = Service.convert_to_register_data(data)
+
+        serializer = RegisterSerializer(data=user)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        user_data = serializer.data
+        print(user_data)
+
+        account = Account.objects.get(id=user_data['id'])
+        token = RefreshToken.for_user(account).access_token
+
+        current_site = get_current_site(request).domain
+        relativeLink = reverse('email-verify', kwargs={'token': token})
+        absurl = f'http://{current_site}{relativeLink}'
+        username = user_data['username']
+        email_body = f'Hi {username} Use link below to verify your email. \n{absurl}'
+        data = {
+            'email_body': email_body,
+            'to_email': account.email,
+            'domain': absurl,
+            'email_subject': 'Verify your email'
+        }
+        Util.send_email(data)
+
+        return Response(user_data, status=status.HTTP_201_CREATED)
+
+
+class VerifyEmail(APIView):
+
+    token_param_config = openapi.Parameter(
+        'token',
+        in_=openapi.IN_QUERY,
+        description='Verification token',
+        type=openapi.TYPE_STRING
+    )
+
+    @swagger_auto_schema(manual_parameters=[token_param_config])
+    def get(self, request, token):
+        tokens = token
+        try:
+            payload = jwt.decode(
+                tokens,
+                settings.SECRET_KEY,
+                algorithms=['HS256']
+            )
+            account = Account.objects.get(id=payload['user_id'])
+            if not Account.is_verified:
+                Account.is_verified = True
+                Account.save()
+
+            return Response(
+                {
+                    'email': 'Successfully activated'
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except jwt.ExpiredSignatureError as identifier:
+            return Response(
+                {
+                    'error': 'Activation Expired'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except jwt.exceptions.DecodeError as identifier:
+            return Response(
+                {
+                    'error': 'Invalid token'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class LoginView(APIView):
+    @swagger_auto_schema(request_body=LoginSerializer)
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        account = serializer.data
+
+        response = Response({
+            'id': account['id'],
+            'username': account['username'],
+            'email': account['email'],
+            'token': account['tokens']['access']
+        })
+
+        response.set_cookie(
+            key='refreshtoken',
+            value=account['tokens']['refresh'],
+            httponly=True
+        )
+
+        return response
+
+
+class CustomTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as e:
+            raise jwt.InvalidTokenError(e.args[0])
+
+        data = serializer.validated_data
+
+        if 'refresh' in str(data):
+            response = Response({
+                'access': data['access']
+            },
+                status=status.HTTP_200_OK)
+            response.set_cookie(
+                key='refreshtoken',
+                value=data['refresh'],
+                httponly=True
+            )
+            return response
+
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
+
+class RequestPasswordResetEmailView(APIView):
+    @swagger_auto_schema(request_body=ResetPasswordEmailRequestSerializer)
+    def post(self, request):
+        serializer = ResetPasswordEmailRequestSerializer(data=request.data)
+
+        email = request.data['email']
+
+        if Account.objects.filter(email=email).exists():
+            account = Account.objects.get(email=email)
+            uidb64 = urlsafe_base64_encode(force_bytes(account.id))
+            token = PasswordResetTokenGenerator().make_token(account)
+            current_site = get_current_site(request=request).domain
+            relativeLink = reverse(
+                'password-reset-confirm', kwargs={'uidb64': uidb64, 'token': token})
+            absurl = f'http://{current_site}{relativeLink}'
+            email_body = f'Hello,\nUse link below to reset your password. \n{absurl}'
+            data = {
+                'email_body': email_body,
+                'to_email': account.email,
+                'domain': absurl,
+                'email_subject': 'Reset your password'
+            }
+            Util.send_email(data)
+            return Response(
+                {
+                    'success': 'We have sent you a link to reset your password'
+                },
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            {
+                'error': 'email does not exits.'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+class PasswordTokenCheckView(APIView):
+    def get(self, request, uidb64, token):
+        try:
+            id = smart_str(urlsafe_base64_decode(uidb64))
+            account = Account.objects.get(id=id)
+
+            if not PasswordResetTokenGenerator().check_token(account, token):
+                return Response(
+                    {
+                        'error': 'Token is not valid, please request a new one.'
+                    },
+                    status=status.HTTP_200_OK
+                )
+            
+            return Response(
+                {
+                    'success': True,
+                    'message': 'credentials valid',
+                    'uidb64': uidb64,
+                    'token': token
+                },
+                status=status.HTTP_200_OK
+            )
+        except DjangoUnicodeDecodeError:
+            if not PasswordResetTokenGenerator().check_token(account, token):
+                return Response(
+                    {
+                        'error': 'Token is not valid, please request a new one'
+                    },
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+
+class SetNewPasswordView(APIView):
+    @swagger_auto_schema(request_body=SetNewPasswordSerializer)
+    def patch(self, request):
+        serializer = SetNewPasswordSerializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+
+        return Response(
+            {
+                'success': True,
+                'message': 'Password reset success',
+            },
+            status=status.HTTP_200_OK
+        )
+    
