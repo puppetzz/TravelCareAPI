@@ -134,7 +134,15 @@ DATABASES = {
         'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
         'HOST': 'localhost',
         'PORT': '5432',
-    }
+    },
+    'cloud': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'travelcare',
+        'USER': os.environ.get('CLOUD_DATABASE_USER'),
+        'PASSWORD': os.environ.get('CLOUD_DATABASE_PASSWORD'),
+        'HOST': 'travelcare.postgres.database.azure.com',
+        'PORT': '5432',
+    },
 }
 
 

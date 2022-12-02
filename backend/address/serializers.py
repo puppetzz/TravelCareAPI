@@ -74,3 +74,18 @@ class AddressSerializer(serializers.ModelSerializer):
             district=district,
             **validated_data
         )
+
+
+class AddressGetSerializer(serializers.ModelSerializer):
+    country = CountrySerializer()
+    province = ProvinceSerializer()
+    district = DistrictSerializer()
+    class Meta:
+        model = Address
+        fields = [
+            'id',
+            'country',
+            'province',
+            'district',
+            'street_address'
+        ]

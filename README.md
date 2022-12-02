@@ -4,7 +4,7 @@ API for TravelCare app.
 
 ## Installation
 
-Activate virtual environment
+Activate virtual environment:
 
 ```bash
 python -m venv env
@@ -16,7 +16,7 @@ source env/bin/activate
 env/Scrips/activate
 ```
 
-Install package
+Install package:
 
 ```bash
 pip install -r requirements.txt
@@ -33,6 +33,13 @@ export EMAIL_HOST_PASSWORD = "your email password"
 export CLOUD_NAME = "your cloudinanry product environment "
 export API_KEY = "your cloudinary api key"
 export API_SECRET = "your cloudinary secret key"
+```
+
+Migrate data:
+
+```
+python manage.py makemigrations
+python manage.py migrate
 ```
 
 ## Usage
