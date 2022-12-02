@@ -4,10 +4,10 @@ API for TravelCare app.
 
 ## Installation
 
-Create a virtual environment to isolate our package dependencies locally.
+Activate virtual environment
 
 ```bash
-python3 -m venv env
+python -m venv env
 
 #on mac
 source env/bin/activate
@@ -19,5 +19,14 @@ env/Scrips/activate
 Install package
 
 ```bash
-pip install -r
+pip install -r requirements.txt
+```
+
+## Usage
+
+Run local web server
+
+```bash
+cd backend
+python manage.py runserver
 ```
