@@ -6,23 +6,22 @@ import uuid
 class DistrictSerializer(serializers.ModelSerializer):
     class Meta:
         model = District
-        fields = ['name']
+        fields = ['id', 'name']
 
 
 class ProvinceSerializer(serializers.ModelSerializer):
-    district = DistrictSerializer(many=True)
-
     class Meta:
         model = Province
-        fields = ['name']
+        fields = ['id', 'name']
 
 
 class CountrySerializer(serializers.ModelSerializer):
-    state = ProvinceSerializer(many=True)
-
     class Meta:
         model = Country
-        fields = ['name']
+        fields = '__all__'
+
+    def validate(self, attrs):
+        return super().validate(attrs)
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -38,21 +37,21 @@ class AddressSerializer(serializers.ModelSerializer):
             'district',
             'street_address',
         ]
-        
+
     def validate(self, attrs):
         country_id = attrs.get('country', '')
         province_id = attrs.get('province', '')
         district_id = attrs.get('district', '')
-        
+
         if not Country.objects.filter(id=country_id).exists():
             raise Exception('country does not exist')
-        
+
         if not Province.objects.filter(id=province_id).exists():
             raise Exception('province does not exist')
-        
+
         if not District.objects.filter(id=district_id).exists():
             raise Exception('district does not exist')
-        
+
         return attrs
 
     def create(self, validated_data):
@@ -69,9 +68,9 @@ class AddressSerializer(serializers.ModelSerializer):
         district = District.objects.get(id=district_id)
 
         return Address.objects.create(
-            id=id, 
-            country=country, 
-            province=province, 
-            district=district, 
+            id=id,
+            country=country,
+            province=province,
+            district=district,
             **validated_data
-            )
+        )
