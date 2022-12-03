@@ -143,4 +143,7 @@ class AddressListView(generics.GenericAPIView):
         
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-            
+# class AddressCerateView(generics.GenericAPIView,
+#                         mixins.CreateModelMixin):
+#     def perform_create(self, serializer):
+#         return super().perform_create(serializer)
