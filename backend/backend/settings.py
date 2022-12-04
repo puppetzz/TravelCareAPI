@@ -127,22 +127,22 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.postgresql',
-    #     'NAME': 'travelcare',
-    #     'USER': os.environ.get('DATABASE_USER'),
-    #     'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
-    #     'HOST': 'localhost',
-    #     'PORT': '5432',
-    # },
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'travelcare',
-        'USER': os.environ.get('CLOUD_DATABASE_USER'),
-        'PASSWORD': os.environ.get('CLOUD_DATABASE_PASSWORD'),
-        'HOST': 'travelcare.postgres.database.azure.com',
+        'USER': os.environ.get('DATABASE_USER'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
+        'HOST': 'localhost',
         'PORT': '5432',
     },
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'travelcare',
+    #     'USER': os.environ.get('CLOUD_DATABASE_USER'),
+    #     'PASSWORD': os.environ.get('CLOUD_DATABASE_PASSWORD'),
+    #     'HOST': 'travelcare.postgres.database.azure.com',
+    #     'PORT': '5432',
+    # },
 }
 
 
@@ -176,9 +176,8 @@ USE_I18N = True
 
 USE_TZ = True
 
-CORS_ORIGIN_ALLOW_ALL = True
-
-
+CORS_ALLOW_ALL_ORIGINS = True 
+CORS_ALLOW_CREDENTIALS = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 

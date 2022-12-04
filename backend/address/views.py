@@ -11,6 +11,7 @@ from .serializers import (
     ProvinceSerializer,
     DistrictSerializer,
     AddressGetSerializer,
+    AddressSerializer,
     
 )
 from rest_framework.response import Response
@@ -143,7 +144,10 @@ class AddressListView(generics.GenericAPIView):
         
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-# class AddressCerateView(generics.GenericAPIView,
-#                         mixins.CreateModelMixin):
-#     def perform_create(self, serializer):
-#         return super().perform_create(serializer)
+class AddressCerateView(generics.GenericAPIView,
+                        mixins.CreateModelMixin):
+    permission_classes = [permissions.IsAuthenticated,]
+    serializer_class = AddressSerializer
+    
+    def perform_create(self, serializer):
+        return super().perform_create(serializer)
