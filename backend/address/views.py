@@ -144,10 +144,12 @@ class AddressListView(generics.GenericAPIView):
         
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class AddressCerateView(generics.GenericAPIView,
-                        mixins.CreateModelMixin):
+class AddressCerateView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated,]
     serializer_class = AddressSerializer
     
-    def perform_create(self, serializer):
-        return super().perform_create(serializer)
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)

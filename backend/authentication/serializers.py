@@ -2,20 +2,19 @@ from collections import OrderedDict
 import uuid
 from rest_framework import serializers
 from .models import Account
-from django.contrib import auth
 from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, force_bytes, force_str, smart_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from users.serializers import UserSerializer
-from users.models import User
-from django.forms import model_to_dict
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 
 class RegisterSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True)
     password = serializers.CharField(max_length=68, write_only=True)
     user = UserSerializer()
+    redirect_link = serializers.CharField(max_length=255)
 
     class Meta:
         model = Account
@@ -25,7 +24,10 @@ class RegisterSerializer(serializers.ModelSerializer):
             'email',
             'password',
             'user',
+            'redirect_link'
         ]
+        
+        extra_fields = ['redirect_link']
 
     def validate(self, attrs):
         username = attrs.get('username', '')
@@ -120,18 +122,21 @@ class LoginSerializer(serializers.ModelSerializer):
 
 class ResetPasswordEmailRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(min_length=2)
+    redirect_link = serializers.CharField(max_length=255, min_length=1)
 
     class Meta:
         fields = ['email']
     
 class SetNewPasswordSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=68, min_length=6, write_only=True)
+    confirm_password = serializers.CharField(max_length=68, min_length=6, write_only=True)
     token = serializers.CharField(min_length=1, write_only=True)
     uidb64 = serializers.CharField(min_length=1, write_only=True)
 
     class Meta:
         fields = [
             'password',
+            'confirm_password',
             'token',
             'uidb64',
         ]
@@ -139,8 +144,12 @@ class SetNewPasswordSerializer(serializers.Serializer):
     def validate(self, attrs):
         try:
             password = attrs.get('password')
+            confirm_password = attrs.get('confirm_password')
             token = attrs.get('token')
             uidb64 = attrs.get('uidb64')
+            
+            if password != confirm_password:
+                raise AuthenticationFailed('password and confirm_password not match.')
 
             id = force_str(urlsafe_base64_decode(uidb64))
             account = Account.objects.get(id=id)
@@ -153,3 +162,21 @@ class SetNewPasswordSerializer(serializers.Serializer):
             return account
         except Exception:
             raise AuthenticationFailed('The reset link is invalid', 401)
+
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+    
+    default_error_messages = {
+        'bad_token': ('Token is expired or invalid')
+    }
+
+    def validate(self, attrs):
+        self.token = attrs['refresh']
+        return attrs
+    
+    def save(self, **kwargs):
+        try:
+            RefreshToken(self.token).blacklist()
+        except TokenError:
+            self.fail('bad_token')

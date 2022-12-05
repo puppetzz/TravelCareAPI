@@ -3,7 +3,8 @@ from .views import (
     CountryListView,
     ProvinceListView,
     DistrictListView,
-    AddressListView
+    AddressListView,
+    AddressCerateView
 )
 
 urlpatterns = [
@@ -19,4 +20,5 @@ urlpatterns = [
          AddressListView.as_view(), name='get-list-address-province'),
     path('get-list-address/<str:country_id>/<str:province_id>/<str:district_id>/',
          AddressListView.as_view(), name='get-list-address-district'),
+    path('create-address/', AddressCerateView.as_view(), name='create-address'),
 ]

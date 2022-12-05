@@ -2,13 +2,14 @@ from tokenize import TokenError
 from django.conf import settings
 from django.shortcuts import render
 from rest_framework.views import APIView
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from .serializers import (
     RegisterSerializer,
     FormRegisterSerializer,
     LoginSerializer,
     ResetPasswordEmailRequestSerializer,
     SetNewPasswordSerializer,
+    LogoutSerializer,
 )
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -44,9 +45,10 @@ class RegisterView(APIView):
         account = Account.objects.get(id=user_data['id'])
         token = RefreshToken.for_user(account).access_token
 
-        current_site = get_current_site(request).domain
-        relativeLink = reverse('email-verify', kwargs={'token': token})
-        absurl = f'http://{current_site}{relativeLink}'
+        # current_site = get_current_site(request).domain
+        # relativeLink = reverse('email-verify', kwargs={'token': token})
+        current_site = data['redirect_link']
+        absurl = f'http://{current_site}/{token}'
         username = user_data['username']
         email_body = f'Hi {username} Use link below to verify your email. \n{absurl}'
         data = {
@@ -117,11 +119,11 @@ class LoginView(APIView):
             'id': account['id'],
             'username': account['username'],
             'email': account['email'],
-            'token': account['tokens']['access']
+            'access_token': account['tokens']['access']
         })
 
         response.set_cookie(
-            key='refreshtoken',
+            key='refresh_token',
             value=account['tokens']['refresh'],
             httponly=True
         )
@@ -166,10 +168,11 @@ class RequestPasswordResetEmailView(APIView):
             account = Account.objects.get(email=email)
             uidb64 = urlsafe_base64_encode(force_bytes(account.id))
             token = PasswordResetTokenGenerator().make_token(account)
-            current_site = get_current_site(request=request).domain
-            relativeLink = reverse(
-                'password-reset-confirm', kwargs={'uidb64': uidb64, 'token': token})
-            absurl = f'http://{current_site}{relativeLink}'
+            # current_site = get_current_site(request=request).domain
+            # relativeLink = reverse(
+            #     'password-reset-confirm', kwargs={'uidb64': uidb64, 'token': token})
+            current_site = request.data['redirect_link']
+            absurl = f'http://{current_site}/{uidb64}/{token}'
             email_body = f'Hello,\nUse link below to reset your password. \n{absurl}'
             data = {
                 'email_body': email_body,
@@ -239,3 +242,18 @@ class SetNewPasswordView(APIView):
             status=status.HTTP_200_OK
         )
     
+class LogoutView(generics.GenericAPIView):
+    serializer_class = LogoutSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            {
+                'success': 'Logout success.'
+            },
+            status=status.HTTP_200_OK
+        )
