@@ -13,8 +13,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 class RegisterSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True)
     password = serializers.CharField(max_length=68, write_only=True)
-    user = UserSerializer()
-    redirect_link = serializers.CharField(max_length=255)
+    user = UserSerializer(required=False)
 
     class Meta:
         model = Account
@@ -24,7 +23,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             'email',
             'password',
             'user',
-            'redirect_link'
         ]
         
         extra_fields = ['redirect_link']
@@ -37,14 +35,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        print('ok')
         id = str(uuid.uuid4().int)[:9]
 
         user = validated_data.pop('user')
 
         account = Account.objects.create_user(id=id, **validated_data)
         user['id'] = id
-
         user_serializer = UserSerializer(data=user)
         user_serializer.is_valid(raise_exception=True)
         user_serializer.save()
@@ -55,13 +51,14 @@ class FormRegisterSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=255)
     email = serializers.EmailField(max_length=255)
     password = serializers.CharField(max_length=68)
-    first_name = serializers.CharField(max_length=255)
-    last_name = serializers.CharField(max_length=255)
-    phone_number = serializers.CharField(max_length=15)
-    country = serializers.CharField(max_length=10)
-    province = serializers.CharField(max_length=10)
-    district = serializers.CharField(max_length=10)
-    street_address = serializers.CharField(max_length=555)
+    first_name = serializers.CharField(max_length=255, required=False, allow_blank=True, allow_null=True)
+    last_name = serializers.CharField(max_length=255, required=False, allow_blank=True, allow_null=True)
+    phone_number = serializers.CharField(max_length=15, required=False, allow_blank=True, allow_null=True)
+    country = serializers.CharField(max_length=10, required=False, allow_blank=True, allow_null=True)
+    province = serializers.CharField(max_length=10, required=False, allow_blank=True, allow_null=True)
+    district = serializers.CharField(max_length=10, required=False, allow_blank=True, allow_null=True)
+    street_address = serializers.CharField(max_length=555, required=False, allow_blank=True, allow_null=True)
+    redirect_link = serializers.CharField(max_length=255)
 
     class Meta:
         fields = '__all__'

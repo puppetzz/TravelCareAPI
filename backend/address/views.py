@@ -12,11 +12,14 @@ from .serializers import (
     DistrictSerializer,
     AddressGetSerializer,
     AddressSerializer,
-    
+    AddressDestroySerializer,
+
 )
 from rest_framework.response import Response
 from rest_framework import generics, status, permissions, mixins
 from django.shortcuts import get_object_or_404
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 
 class CountryListView(mixins.ListModelMixin,
@@ -97,7 +100,7 @@ class DistrictListView(generics.GenericAPIView):
 class AddressListView(generics.GenericAPIView):
     # permission_classes = [permissions.IsAuthenticated]
     serializer_class = AddressGetSerializer
-    
+
     def get(self, request, *args, **kwargs):
         country_id = kwargs.get('country_id')
         province_id = kwargs.get('province_id')
@@ -110,46 +113,57 @@ class AddressListView(generics.GenericAPIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         if not province_id:
             if not district_id:
-                address = Address.objects.filter(country=get_object_or_404(Country, id=country_id))
+                address = Address.objects.filter(
+                    country=get_object_or_404(Country, id=country_id))
                 serializer = AddressGetSerializer(address, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            
+
             return Response(
                 {
                     'error': 'Province should not null.'
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         if not district_id:
             address = Address.objects.filter(
                 country=get_object_or_404(Country, id=country_id)).filter(
                     province=get_object_or_404(Province, id=province_id)
-                )
+            )
 
             serializer = AddressGetSerializer(address, many=True)
-            
+
             return Response(serializer.data, status=status.HTTP_200_OK)
-        
-        
+
         address = Address.objects.filter(
             country=get_object_or_404(Country, id=country_id)).filter(
                 province=get_object_or_404(Province, id=province_id)
-                )
-        
+        )
+
         serializer = self.serializer_class(address, many=True)
-        
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class AddressCerateView(generics.GenericAPIView):
-    permission_classes = [permissions.IsAuthenticated,]
+    permission_classes = [permissions.IsAuthenticated, ]
     serializer_class = AddressSerializer
-    
+
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AddressDestroyView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Address.objects.all()
+
+    def delete(self, request, *args, **kwargs):
+        address = get_object_or_404(self.queryset, id=kwargs.get('id'))
+        address.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

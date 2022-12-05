@@ -34,13 +34,11 @@ class RegisterView(APIView):
         data = request.data
 
         user = Service.convert_to_register_data(data)
-
         serializer = RegisterSerializer(data=user)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
         user_data = serializer.data
-        print(user_data)
 
         account = Account.objects.get(id=user_data['id'])
         token = RefreshToken.for_user(account).access_token
@@ -59,7 +57,12 @@ class RegisterView(APIView):
         }
         Util.send_email(data)
 
-        return Response(user_data, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "success": 'Successful registration please check your email.'
+            }, 
+            status=status.HTTP_201_CREATED
+        )
 
 
 class VerifyEmail(APIView):
