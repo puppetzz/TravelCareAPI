@@ -66,15 +66,6 @@ class RegisterView(APIView):
 
 
 class VerifyEmail(APIView):
-
-    token_param_config = openapi.Parameter(
-        'token',
-        in_=openapi.IN_QUERY,
-        description='Verification token',
-        type=openapi.TYPE_STRING
-    )
-
-    @swagger_auto_schema(manual_parameters=[token_param_config])
     def get(self, request, token):
         tokens = token
         try:

@@ -11,7 +11,7 @@ from .serializers import (
     ProvinceSerializer,
     DistrictSerializer,
     AddressGetSerializer,
-    AddressSerializer,
+    AddressRegisterSerializer,
     AddressDestroySerializer,
 
 )
@@ -68,7 +68,7 @@ class ProvinceListView(generics.GenericAPIView):
 
 
 class DistrictListView(generics.GenericAPIView):
-    # permission_classes = [permissions.IsAuthenticated, ]
+    permission_classes = [permissions.IsAuthenticated, ]
     serializer_class = DistrictSerializer
 
     def get(self, request, *args, **kwargs):
@@ -98,7 +98,7 @@ class DistrictListView(generics.GenericAPIView):
 
 
 class AddressListView(generics.GenericAPIView):
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = AddressGetSerializer
 
     def get(self, request, *args, **kwargs):
@@ -150,7 +150,7 @@ class AddressListView(generics.GenericAPIView):
 
 class AddressCerateView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
-    serializer_class = AddressSerializer
+    serializer_class = AddressRegisterSerializer
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)

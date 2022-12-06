@@ -24,7 +24,7 @@ class CountrySerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
 
-class AddressSerializer(serializers.ModelSerializer):
+class AddressRegisterSerializer(serializers.ModelSerializer):
     country = serializers.CharField(max_length=255, write_only=True, allow_null=True, allow_blank=True)
     province = serializers.CharField(max_length=255, write_only=True, allow_null=True, allow_blank=True)
     district = serializers.CharField(max_length=255, write_only=True, allow_null=True, allow_blank=True)
@@ -97,3 +97,4 @@ class AddressDestroySerializer(serializers.Serializer):
     id = serializers.CharField(max_length=10)
     class Meta:
         fields = '__all__'
+

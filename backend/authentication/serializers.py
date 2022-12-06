@@ -6,14 +6,14 @@ from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, force_bytes, force_str, smart_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from users.serializers import UserSerializer
+from users.serializers import UserRegisterSerializer
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 
 class RegisterSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True)
     password = serializers.CharField(max_length=68, write_only=True)
-    user = UserSerializer(required=False)
+    user = UserRegisterSerializer(required=False)
 
     class Meta:
         model = Account
@@ -41,7 +41,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         account = Account.objects.create_user(id=id, **validated_data)
         user['id'] = id
-        user_serializer = UserSerializer(data=user)
+        user_serializer = UserRegisterSerializer(data=user)
         user_serializer.is_valid(raise_exception=True)
         user_serializer.save()
         return account
