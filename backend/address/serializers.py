@@ -24,7 +24,7 @@ class CountrySerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
 
-class AddressRegisterSerializer(serializers.ModelSerializer):
+class AddressCreateSerializer(serializers.ModelSerializer):
     country = serializers.CharField(max_length=255, write_only=True, allow_null=True, allow_blank=True)
     province = serializers.CharField(max_length=255, write_only=True, allow_null=True, allow_blank=True)
     district = serializers.CharField(max_length=255, write_only=True, allow_null=True, allow_blank=True)

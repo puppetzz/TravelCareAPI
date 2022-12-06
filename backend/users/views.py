@@ -6,6 +6,7 @@ from .serializers import UserSerializer
 from authentication.models import Account
 from .models import User
 from django.shortcuts import get_object_or_404
+from .service import Service
 
 class UserView(generics.GenericAPIView):
     # permission_classes = [permissions.IsAuthenticated]
@@ -17,4 +18,12 @@ class UserView(generics.GenericAPIView):
         account = get_object_or_404(Account, id=id)
         user = get_object_or_404(User, account=account)
         serializer = self.serializer_class(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = Service.user_to_view(serializer.data)
+        return Response(data, status=status.HTTP_200_OK)
+
+# class UserCreateView(generics.GenericAPIView):
+#     parser_classes = [MultiPartParser, FormParser]
+#     serializer_class = UserSerializer
+
+#     def patch()
+    

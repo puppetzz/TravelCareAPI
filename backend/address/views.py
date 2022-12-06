@@ -11,7 +11,7 @@ from .serializers import (
     ProvinceSerializer,
     DistrictSerializer,
     AddressGetSerializer,
-    AddressRegisterSerializer,
+    AddressCreateSerializer,
     AddressDestroySerializer,
 
 )
@@ -150,7 +150,7 @@ class AddressListView(generics.GenericAPIView):
 
 class AddressCerateView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
-    serializer_class = AddressRegisterSerializer
+    serializer_class = AddressCreateSerializer
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)

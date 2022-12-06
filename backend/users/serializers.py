@@ -1,14 +1,14 @@
 from rest_framework import serializers
 from .models import User
 from address.serializers import (
-    AddressRegisterSerializer, 
+    AddressCreateSerializer, 
     AddressGetSerializer,
     AddressSerializer
     )
 from authentication.models import Account
 
 class UserRegisterSerializer(serializers.ModelSerializer):
-    address = AddressRegisterSerializer(allow_null=True, required=False)
+    address = AddressCreateSerializer(allow_null=True, required=False)
     id = serializers.CharField(max_length=10, required=False)
     
     class Meta:
@@ -31,7 +31,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
                 address = None
         
         if address:
-            address_serializer = AddressRegisterSerializer(data=address)
+            address_serializer = AddressCreateSerializer(data=address)
             address_serializer.is_valid(raise_exception=True)
             address = address_serializer.save()
         
