@@ -8,6 +8,13 @@ class Service:
             data[field] = user_data['account'][field]
         user_data.pop('account')
         data.update(user_data)
+        if data['address'] == None:
+            address = {
+                'country': '',
+                'province': '',
+                'district': '',
+            }
+            data['address'] = address
         return data
         
         

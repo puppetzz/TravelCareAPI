@@ -7,9 +7,10 @@ from authentication.models import Account
 from .models import User
 from django.shortcuts import get_object_or_404
 from .service import Service
+from authentication.permissions import IsOwner
 
 class UserView(generics.GenericAPIView):
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsOwner]
     parser_classes = [MultiPartParser, FormParser]
     serializer_class = UserSerializer
 

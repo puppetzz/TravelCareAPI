@@ -6,6 +6,7 @@ from address.serializers import (
     AddressSerializer
     )
 from authentication.models import Account
+from address.models import Address, Country, Province, District
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     address = AddressCreateSerializer(allow_null=True, required=False)
@@ -30,23 +31,24 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             if not address.get('country'):
                 address = None
         
-        if address:
-            address_serializer = AddressCreateSerializer(data=address)
-            address_serializer.is_valid(raise_exception=True)
-            address = address_serializer.save()
-        
         id = validated_data.pop('id')
+        
+        if address:
+            if Country.objects.filter(
+                id=address['country']).exists() and Province.objects.filter(id=address['province']) and District.objects.filter(id=address['district']).exists():
+                address_serializer = AddressCreateSerializer(data=address)
+                address_serializer.is_valid(raise_exception=True)
+                address = address_serializer.save()
+            else:
+                Account.objects.get(id=id).delete()
+                raise Exception({'error': 'Address not found'})
+        
         account = Account.objects.get(id=id)
         
         if address:
             return User.objects.create(account=account, address=address, **validated_data)
 
         return User.objects.create(account=account, **validated_data)
-
-class AccountSerializerField(serializers.SlugRelatedField):
-    def get_queryset(self):
-        queryset = Account.objects.all()
-        return queryset
 
 
 class AccountSerializer(serializers.ModelSerializer):

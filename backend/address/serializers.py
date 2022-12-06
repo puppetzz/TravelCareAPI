@@ -63,11 +63,14 @@ class AddressCreateSerializer(serializers.ModelSerializer):
         district_id = validated_data.pop('district')
         
         if country_id:
-            country = Country.objects.get(id=country_id)
+            if Country.objects.filter(id=country_id).exists():
+                country = Country.objects.get(id=country_id)
         if province_id:
-            province = Province.objects.get(id=province_id)
+            if Province.objects.filter(id=province_id).exists():
+                province = Province.objects.get(id=province_id)
         if district_id:
-            district = District.objects.get(id=district_id)
+            if District.objects.get(id=district_id):
+                district = District.objects.get(id=district_id)
 
         return Address.objects.create(
             id=id,
