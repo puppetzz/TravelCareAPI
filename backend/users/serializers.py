@@ -24,8 +24,11 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         address = validated_data.pop('address')
-        if not address['country']:
+        if not address:
             address = None
+        if hasattr(address, 'country'):
+            if not address.get('country'):
+                address = None
         
         if address:
             address_serializer = AddressRegisterSerializer(data=address)
