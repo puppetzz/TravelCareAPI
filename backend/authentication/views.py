@@ -26,6 +26,10 @@ from rest_framework.viewsets import ModelViewSet
 from .utils import Util
 from .models import Account
 from .services import Service
+from django.shortcuts import get_object_or_404
+from users.models import User
+from address.models import Address
+from django.forms import model_to_dict
 
 
 class RegisterView(APIView):
@@ -251,3 +255,16 @@ class LogoutView(generics.GenericAPIView):
             },
             status=status.HTTP_200_OK
         )
+
+class AccountDeleteView(generics.GenericAPIView):
+    
+    def delete(self, request, *args, **kwargs):
+        id = kwargs.get('id')
+        account = get_object_or_404(Account, id=id)
+        user = get_object_or_404(User, account=account)
+        user_data = model_to_dict(user)
+        address = get_object_or_404(Address, id=user_data.get('address'))
+        user.delete()
+        address.delete()
+        account.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

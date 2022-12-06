@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from .models import User
-from address.serializers import AddressRegisterSerializer, AddressGetSerializer
+from address.serializers import (
+    AddressRegisterSerializer, 
+    AddressGetSerializer,
+    AddressSerializer
+    )
 from authentication.models import Account
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -53,7 +57,7 @@ class AccountSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     account = AccountSerializer()
-    address = serializers.SerializerMethodField()
+    address = AddressSerializer()
     class Meta:
         model = User
         fields = [

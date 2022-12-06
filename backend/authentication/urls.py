@@ -8,6 +8,7 @@ from .views import (
     PasswordTokenCheckView,
     SetNewPasswordView,
     LogoutView,
+    AccountDeleteView,
 )
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
@@ -26,4 +27,5 @@ urlpatterns = [
          PasswordTokenCheckView.as_view(), name='password-reset-confirm'),
     path('password-reset-complete/',
          SetNewPasswordView.as_view(), name='password-reset-complete'),
+    path('delete-user/<str:id>', AccountDeleteView.as_view(), name='delete-user'),
 ]
