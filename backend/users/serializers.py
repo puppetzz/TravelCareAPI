@@ -3,11 +3,13 @@ from .models import User
 from address.serializers import (
     AddressCreateSerializer, 
     AddressGetSerializer,
-    AddressSerializer
+    AddressSerializer,
+    AddressUpdateSerializer
     )
 from authentication.models import Account
 from address.models import Address, Country, Province, District
 from django.shortcuts import get_object_or_404
+from django.forms import model_to_dict
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     address = AddressCreateSerializer(allow_null=True, required=False)
@@ -113,13 +115,20 @@ class UserUpdateSerializer(serializers.Serializer):
         user.profile_picture = attrs.get('profile_picture')
         if attrs.get('country'):
             address = dict()
+            address_id = model_to_dict(user).get('address')
             address['country'] = attrs.get('country')
             address['province'] = attrs.get('province')
             address['district'] = attrs.get('district')
             address['street_address'] = attrs.get('street_address')
-            address_serializer = AddressCreateSerializer(data=address)
-            address_serializer.is_valid(raise_exception=True)
-            address = address_serializer.save()
+            if address_id:
+                if Address.objects.filter(id=address_id).exists():
+                    address_serializer = AddressUpdateSerializer(Address.objects.get(id=address_id), data=address)
+                    address_serializer.is_valid(raise_exception=True)
+                    address_serializer.save()
+            else:
+                address_serializer = AddressCreateSerializer(data=address)
+                address_serializer.is_valid(raise_exception=True)
+                user.address = address_serializer.save()
         account.save()
         user.save()
         return attrs

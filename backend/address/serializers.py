@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Country, Province, District, Address
 import uuid
+from django.shortcuts import get_object_or_404
 
 
 class DistrictSerializer(serializers.ModelSerializer):
@@ -109,3 +110,23 @@ class AddressSerializer(serializers.ModelSerializer):
             'district',
             'street_address'
         ]
+        
+class AddressUpdateSerializer(serializers.Serializer):
+    country = serializers.CharField(max_length=10, required=False)
+    province = serializers.CharField(max_length=10, required=False) 
+    district = serializers.CharField(max_length=10, required=False) 
+    street_address = serializers.CharField(max_length=255)
+
+    def validate(self, attrs):
+        return attrs
+    
+    def update(self, instance, validated_data):
+        country = get_object_or_404(Country, id=validated_data.get('country'))
+        province = get_object_or_404(Province, id=validated_data.get('province'))
+        district = get_object_or_404(District, id=validated_data.get('district'))
+        instance.country = country
+        instance.province = province
+        instance.district = district
+        instance.street_address = validated_data.get('street_address')
+        instance.save()
+        return instance
