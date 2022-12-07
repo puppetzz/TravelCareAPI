@@ -25,6 +25,7 @@ pip install -r requirements.txt
 Create .env file in backend folder:
 
 ```
+export DATABASE_NAME = "your database name"
 export DATABASE_USER = "your postgres user name database"
 export DATABASE_PASSWORD = "your database password"
 export SECURITY_KEY = "your secret key"

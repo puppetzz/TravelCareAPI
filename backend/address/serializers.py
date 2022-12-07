@@ -40,19 +40,6 @@ class AddressCreateSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
-        # country_id = attrs.get('country', '')
-        # province_id = attrs.get('province', '')
-        # district_id = attrs.get('district', '')
-
-        # if not Country.objects.filter(id=country_id).exists():
-        #     raise Exception('country does not exist')
-
-        # if not Province.objects.filter(id=province_id).exists():
-        #     raise Exception('province does not exist')
-
-        # if not District.objects.filter(id=district_id).exists():
-        #     raise Exception('district does not exist')
-
         return attrs
 
     def create(self, validated_data):
