@@ -62,7 +62,8 @@ class AccountSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'username',
-            'email'
+            'email',
+            'create_at',
         ]
 
 class UserSerializer(serializers.ModelSerializer):
@@ -89,7 +90,6 @@ class UserUpdateSerializer(serializers.Serializer):
     province = serializers.CharField(max_length=10, required=False)
     district = serializers.CharField(max_length=10, required=False)
     street_address = serializers.CharField(max_length=255, required=False)
-    profile_picture = serializers.ImageField(required=False)
     
     class Meta:
         fields = [
@@ -101,7 +101,6 @@ class UserUpdateSerializer(serializers.Serializer):
             'country',
             'province',
             'district',
-            'profile_picture',
         ]
     
     def validate(self, attrs):
@@ -112,7 +111,6 @@ class UserUpdateSerializer(serializers.Serializer):
         user.first_name = attrs.get('first_name')
         user.last_name = attrs.get('last_name')
         user.phone_number = attrs.get('phone_number')
-        user.profile_picture = attrs.get('profile_picture')
         if attrs.get('country'):
             address = dict()
             address_id = model_to_dict(user).get('address')
@@ -132,3 +130,24 @@ class UserUpdateSerializer(serializers.Serializer):
         account.save()
         user.save()
         return attrs
+    
+class UserProfilePictureUpdateSerializer(serializers.Serializer):
+    id = serializers.CharField(max_length=10)
+    profile_picture = serializers.ImageField()
+    
+    class Meta:
+        fields = [
+            'id',
+            'profile_picture',
+        ]
+    
+    def validate(self, attrs):
+        account = get_object_or_404(Account, id=attrs.get('id'))
+        user = get_object_or_404(User, account=account)
+        if attrs.get('profile_picture'):
+            user.profile_picture = attrs.get('profile_picture')
+        else:
+            raise Exception({'error': 'profile picture should not null.'})
+        user.save()
+        return attrs
+    

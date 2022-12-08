@@ -5,6 +5,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import (
     UserSerializer,
     UserUpdateSerializer,
+    UserProfilePictureUpdateSerializer,
     )
 from authentication.models import Account
 from .models import User
@@ -26,7 +27,6 @@ class UserView(generics.GenericAPIView):
         return Response(data, status=status.HTTP_200_OK)
 
 class UserCreateView(generics.GenericAPIView):
-    parser_classes = [MultiPartParser, FormParser]
     serializer_class = UserUpdateSerializer
 
     def put(self, request, format=None):
@@ -38,4 +38,17 @@ class UserCreateView(generics.GenericAPIView):
                 'message': 'Update user success.'
             },
             status=status.HTTP_200_OK)
-    
+
+class UserProfilePictureUpdateView(generics.GenericAPIView):
+    parser_classes = [MultiPartParser, FormParser]
+    serializer_class = UserProfilePictureUpdateSerializer
+
+    def patch(self, request, format=None):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid()
+        return Response(
+            {
+                'success': 'update profile picture success.'
+            },
+            status=status.HTTP_200_OK
+        )
