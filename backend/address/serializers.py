@@ -112,21 +112,25 @@ class AddressSerializer(serializers.ModelSerializer):
         ]
         
 class AddressUpdateSerializer(serializers.Serializer):
-    country = serializers.CharField(max_length=10, required=False)
-    province = serializers.CharField(max_length=10, required=False) 
-    district = serializers.CharField(max_length=10, required=False) 
-    street_address = serializers.CharField(max_length=255)
+    country = serializers.CharField(max_length=10, required=False, allow_blank=True)
+    province = serializers.CharField(max_length=10, required=False, allow_blank=True) 
+    district = serializers.CharField(max_length=10, required=False, allow_blank=True) 
+    street_address = serializers.CharField(max_length=255, allow_blank=True)
 
     def validate(self, attrs):
         return attrs
     
     def update(self, instance, validated_data):
-        country = get_object_or_404(Country, id=validated_data.get('country'))
-        province = get_object_or_404(Province, id=validated_data.get('province'))
-        district = get_object_or_404(District, id=validated_data.get('district'))
-        instance.country = country
-        instance.province = province
-        instance.district = district
-        instance.street_address = validated_data.get('street_address')
+        if validated_data.get('country'):
+            country = get_object_or_404(Country, id=validated_data.get('country'))
+            instance.country = country
+        if validated_data.get('province'):
+            province = get_object_or_404(Province, id=validated_data.get('province'))
+            instance.province = province
+        if validated_data.get('district'):
+            district = get_object_or_404(District, id=validated_data.get('district'))
+            instance.district = district
+        if validated_data.get('street_address'):
+            instance.street_address = validated_data.get('street_address')
         instance.save()
         return instance

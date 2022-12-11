@@ -26,18 +26,15 @@ class UserView(generics.GenericAPIView):
         data = Service.user_to_view(serializer.data)
         return Response(data, status=status.HTTP_200_OK)
 
-class UserCreateView(generics.GenericAPIView):
+class UserUpdateView(generics.GenericAPIView):
     serializer_class = UserUpdateSerializer
 
     def put(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        return Response(
-            {
-                'success': True,
-                'message': 'Update user success.'
-            },
-            status=status.HTTP_200_OK)
+        id = request.data.get('id')
+        user = Service.get_user(id)
+        return Response(user, status=status.HTTP_200_OK)
 
 class UserProfilePictureUpdateView(generics.GenericAPIView):
     parser_classes = [MultiPartParser, FormParser]
@@ -45,10 +42,9 @@ class UserProfilePictureUpdateView(generics.GenericAPIView):
 
     def patch(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
-        serializer.is_valid()
+        serializer.is_valid(raise_exception=True)
+        profile_picture = Service.get_profile_picture(request.data.get('id'))
         return Response(
-            {
-                'success': 'update profile picture success.'
-            },
+            profile_picture,
             status=status.HTTP_200_OK
         )

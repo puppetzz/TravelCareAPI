@@ -117,7 +117,8 @@ class LoginView(APIView):
             'id': account['id'],
             'username': account['username'],
             'email': account['email'],
-            'access_token': account['tokens']['access']
+            'access_token': account['tokens']['access'],
+            'refresh_token': account['tokens']['refresh']
         })
 
         response.set_cookie(

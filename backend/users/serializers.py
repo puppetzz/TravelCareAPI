@@ -82,14 +82,14 @@ class UserSerializer(serializers.ModelSerializer):
     
 class UserUpdateSerializer(serializers.Serializer):
     id = serializers.CharField(max_length=10)
-    username = serializers.CharField(max_length=255)
-    first_name = serializers.CharField(max_length=255, required=False)
-    last_name = serializers.CharField(max_length=255, required=False)
-    phone_number = serializers.CharField(max_length=11, required=False)
-    country = serializers.CharField(max_length=10, required=False)
-    province = serializers.CharField(max_length=10, required=False)
-    district = serializers.CharField(max_length=10, required=False)
-    street_address = serializers.CharField(max_length=255, required=False)
+    username = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    first_name = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    last_name = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    phone_number = serializers.CharField(max_length=11, required=False, allow_blank=True)
+    country = serializers.CharField(max_length=10, required=False, allow_blank=True)
+    province = serializers.CharField(max_length=10, required=False, allow_blank=True)
+    district = serializers.CharField(max_length=10, required=False, allow_blank=True)
+    street_address = serializers.CharField(max_length=255, required=False, allow_blank=True)
     
     class Meta:
         fields = [
@@ -106,27 +106,32 @@ class UserUpdateSerializer(serializers.Serializer):
     def validate(self, attrs):
         id = attrs.get('id')
         account = get_object_or_404(Account, id=id)
-        account.username = attrs.get('username')
+        if attrs.get('username'):
+            account.username = attrs.get('username')
         user = get_object_or_404(User, account=account)
-        user.first_name = attrs.get('first_name')
-        user.last_name = attrs.get('last_name')
-        user.phone_number = attrs.get('phone_number')
-        if attrs.get('country'):
-            address = dict()
-            address_id = model_to_dict(user).get('address')
+        if attrs.get('first_name'):
+            user.first_name = attrs.get('first_name')
+        if attrs.get('last_name'):
+            user.last_name = attrs.get('last_name')
+        if attrs.get('phone_number'):
+            user.phone_number = attrs.get('phone_number')
+        address = dict()
+        address_id = model_to_dict(user).get('address')
+        if address_id:
             address['country'] = attrs.get('country')
             address['province'] = attrs.get('province')
             address['district'] = attrs.get('district')
             address['street_address'] = attrs.get('street_address')
-            if address_id:
-                if Address.objects.filter(id=address_id).exists():
-                    address_serializer = AddressUpdateSerializer(Address.objects.get(id=address_id), data=address)
-                    address_serializer.is_valid(raise_exception=True)
-                    address_serializer.save()
-            else:
-                address_serializer = AddressCreateSerializer(data=address)
+            if Address.objects.filter(id=address_id).exists():
+                address_serializer = AddressUpdateSerializer(Address.objects.get(id=address_id), data=address)
                 address_serializer.is_valid(raise_exception=True)
-                user.address = address_serializer.save()
+                address_serializer.save()
+            else:
+                raise Exception({'error': 'address does not exist.'})
+        else:
+            address_serializer = AddressCreateSerializer(data=address)
+            address_serializer.is_valid(raise_exception=True)
+            user.address = address_serializer.save()
         account.save()
         user.save()
         return attrs
