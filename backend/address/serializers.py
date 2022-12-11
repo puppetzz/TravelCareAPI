@@ -90,18 +90,9 @@ class AddressDestroySerializer(serializers.Serializer):
         fields = '__all__'
 
 class AddressSerializer(serializers.ModelSerializer):
-    country = serializers.SlugRelatedField(
-        slug_field='name',
-        queryset=Country.objects.all()
-    )
-    province = serializers.SlugRelatedField(
-        slug_field='name',
-        queryset=Province.objects.all()
-    )
-    district = serializers.SlugRelatedField(
-        slug_field='name',
-        queryset=District.objects.all()
-    )
+    country = CountrySerializer()
+    province = ProvinceSerializer()
+    district = DistrictSerializer()
     class Meta:
         model = Address
         fields =[
