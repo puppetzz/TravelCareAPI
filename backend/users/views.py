@@ -27,6 +27,7 @@ class UserView(generics.GenericAPIView):
         return Response(data, status=status.HTTP_200_OK)
 
 class UserUpdateView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated, IsOwner]
     serializer_class = UserUpdateSerializer
 
     def put(self, request, format=None):
@@ -37,6 +38,7 @@ class UserUpdateView(generics.GenericAPIView):
         return Response(user, status=status.HTTP_200_OK)
 
 class UserProfilePictureUpdateView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated, IsOwner]
     parser_classes = [MultiPartParser, FormParser]
     serializer_class = UserProfilePictureUpdateSerializer
 

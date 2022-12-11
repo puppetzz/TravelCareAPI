@@ -26,5 +26,6 @@ urlpatterns = [
          cache_timeout=0), name='schema-redoc'),
     path('auth/', include('authentication.urls')),
     path('address/', include('address.urls')),
-    path('users/', include('users.urls'))
+    path('users/', include('users.urls')),
+    path('locations/', include('locations.urls')),
 ]

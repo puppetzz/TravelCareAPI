@@ -167,3 +167,7 @@ class AddressDestroyView(generics.GenericAPIView):
         address = get_object_or_404(self.queryset, id=kwargs.get('id'))
         address.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# class CountryView(generics.ListAPIView):
+    

@@ -4,18 +4,21 @@ from django.db import models
 class Country(models.Model):
     id = models.CharField(max_length=10, primary_key=True)
     name = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
 
 
 class Province(models.Model):
     id = models.CharField(max_length=10, primary_key=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
 
 
 class District(models.Model):
     id = models.CharField(max_length=10, primary_key=True)
     province = models.ForeignKey(Province, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
 
 
 class AddressManager(models.Manager):

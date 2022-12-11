@@ -70,19 +70,27 @@ class AddressCreateSerializer(serializers.ModelSerializer):
 
 
 class AddressGetSerializer(serializers.ModelSerializer):
-    country = CountrySerializer()
-    province = ProvinceSerializer()
-    district = DistrictSerializer()
+    country = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='name'
+    )
+    province = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='name'
+    )
+    district = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='name'
+    )
+    
     class Meta:
         model = Address
         fields = [
-            'id',
             'country',
             'province',
             'district',
             'street_address'
         ]
-        
 
 class AddressDestroySerializer(serializers.Serializer):
     id = serializers.CharField(max_length=10)

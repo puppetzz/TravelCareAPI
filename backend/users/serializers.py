@@ -2,7 +2,6 @@ from rest_framework import serializers
 from .models import User
 from address.serializers import (
     AddressCreateSerializer, 
-    AddressGetSerializer,
     AddressSerializer,
     AddressUpdateSerializer
     )
