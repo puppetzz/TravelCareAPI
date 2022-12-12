@@ -142,6 +142,17 @@ class LocationListByDistrictView(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
         
 
+class LocationView(generics.GenericAPIView):
+    serializer_class = LocationSerializer
+    queryset = Location.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        id = kwargs.get('location_id')
+        
+        location = get_object_or_404(Location, id=id)
+        serializer = self.serializer_class(location)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 class LocationCreateView(generics.GenericAPIView):
     serializer_class = LocationCreateSerializer
     
