@@ -28,5 +28,6 @@ class Review(models.Model):
 
 
 class ImageStorage(models.Model):
+    id = models.CharField(max_length=10, primary_key=True)
     review = models.ForeignKey(Review, on_delete=models.CASCADE)
     image = models.ImageField(upload_to=generate_unique_name('review_image'))

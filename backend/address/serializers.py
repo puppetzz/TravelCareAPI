@@ -7,13 +7,13 @@ from django.shortcuts import get_object_or_404
 class DistrictSerializer(serializers.ModelSerializer):
     class Meta:
         model = District
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'description']
 
 
 class ProvinceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Province
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'description']
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -133,3 +133,18 @@ class AddressUpdateSerializer(serializers.Serializer):
             instance.street_address = validated_data.get('street_address')
         instance.save()
         return instance
+    
+class AddressReviewSerializer(serializers.ModelSerializer):
+    country = serializers.SlugRelatedField(read_only=True, slug_field='name')
+    province = serializers.SlugRelatedField(read_only=True, slug_field='name')
+    district = serializers.SlugRelatedField(read_only=True, slug_field='name')
+
+    class Meta:
+        model = Address
+        fields = [
+            'id', 
+            'country', 
+            'province', 
+            'district', 
+            'street_address'
+        ]

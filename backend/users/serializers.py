@@ -3,7 +3,8 @@ from .models import User
 from address.serializers import (
     AddressCreateSerializer, 
     AddressSerializer,
-    AddressUpdateSerializer
+    AddressUpdateSerializer,
+    AddressReviewSerializer,
     )
 from authentication.models import Account
 from address.models import Address, Country, Province, District
@@ -155,3 +156,19 @@ class UserProfilePictureUpdateSerializer(serializers.Serializer):
         user.save()
         return attrs
     
+    
+class AccountReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ['id', 'username']
+    
+class UserReviewSerializer(serializers.ModelSerializer):
+    account = AccountReviewSerializer()
+    address = AddressReviewSerializer()
+    class Meta:
+        model = User
+        fields = [
+            'account',
+            'address',
+            'profile_picture',
+        ]

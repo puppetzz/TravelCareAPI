@@ -22,80 +22,95 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 
-class CountryListView(mixins.ListModelMixin,
-                      mixins.RetrieveModelMixin,
-                      generics.GenericAPIView):
-    permission_classes = [permissions.IsAuthenticated, ]
+class CountryListView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = CountrySerializer
     queryset = Country.objects.all()
-    lookup_field = 'id'
 
     def get(self, request, *args, **kwargs):
         id = kwargs.get('id')
-        if id is not None:
-            return self.retrieve(request, *args, **kwargs)
-        return self.list(request, *args, **kwargs)
+        if not id:
+            countries = self.get_queryset()
+            serializer = CountrySerializer(countries, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        country = self.get_serializer().get(id=id)
+        serializer = CountrySerializer(country)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ProvinceListView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
     serializer_class = ProvinceSerializer
+    queryset = Province.objects.all()
 
     def get(self, request, *args, **kwargs):
         country_id = kwargs.get('country_id')
-        if not country_id:
-            return Response(
-                {
-                    'error': 'Country should not null'
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        province = None
-        if Country.objects.filter(id=country_id).exists():
-            province = Province.objects.filter(
-                country=Country.objects.get(id=country_id))
-        if not province:
-            return Response(
-                {
-                    'error': 'Country do have not province',
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        province_id = kwargs.get('province_id')
 
-        serializer = self.serializer_class(province, many=True)
+        if not province_id:
+            if not country_id:
+                return Response(
+                    {
+                        'error': 'Country should not null'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            province = None
+            if Country.objects.filter(id=country_id).exists():
+                province = Province.objects.filter(country__id=country_id)
+            if not province:
+                return Response(
+                    {
+                        'error': 'Country do have not province',
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
+            serializer = self.serializer_class(province, many=True)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        province = get_object_or_404(Province, id=province_id)
+        serializer = self.serializer_class(province)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class DistrictListView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
     serializer_class = DistrictSerializer
+    queryset = District.objects.all()
 
     def get(self, request, *args, **kwargs):
         province_id = kwargs.get('province_id')
-        if not province_id:
-            return Response(
-                {
-                    'error': 'province should not null'
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        district = None
-        if Province.objects.filter(id=province_id).exists():
-            district = District.objects.filter(
-                province=Province.objects.get(id=province_id))
-        if not district:
-            return Response(
-                {
-                    'error': 'Province do have not district',
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        district_id = kwargs.get('district_id')
+        
+        if not district_id:
+            if not province_id:
+                return Response(
+                    {
+                        'error': 'province should not null'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            district = None
+            if Province.objects.filter(id=province_id).exists():
+                district = District.objects.filter(province__id=province_id)
+            if not district:
+                return Response(
+                    {
+                        'error': 'Province do have not district',
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-        serializer = self.serializer_class(district, many=True)
+            serializer = self.serializer_class(district, many=True)
 
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        district = get_object_or_404(District, id=district_id)
+        serializer = self.serializer_class(district)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 class AddressListView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -167,7 +182,3 @@ class AddressDestroyView(generics.GenericAPIView):
         address = get_object_or_404(self.queryset, id=kwargs.get('id'))
         address.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-# class CountryView(generics.ListAPIView):
-    
