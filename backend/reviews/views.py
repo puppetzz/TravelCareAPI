@@ -4,6 +4,7 @@ from .serializers import (
     ImageStorageSerializer,
     ReviewCreateSerializer,
     ImageCreateListSerializer,
+    ImageCreateSerializer,
 )
 from users.serializers import UserSerializer
 from .models import TripType, Review, ImageStorage
@@ -69,7 +70,7 @@ class ReviewGetView(generics.GenericAPIView):
             
             review = get_object_or_404(Review, id=review_id)
             serializer = self.serializer_class(review)
-            return Response(serializer.data, status=status)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         
         reviews = self.get_queryset().filter(location__id=location_id)
         serializer = self.serializer_class(reviews, many=True)
@@ -86,7 +87,7 @@ class ReviewCreateView(generics.GenericAPIView):
         review_serializer = ReviewSerializer(review)
         return Response(review_serializer.data, status=status.HTTP_200_OK)
 
-class ImageCreateView(generics.GenericAPIView):
+class ImageCreateListView(generics.GenericAPIView):
     queryset = ImageStorage.objects.all()
     parser_classes = [MultiPartParser, FormParser]
 
@@ -94,7 +95,31 @@ class ImageCreateView(generics.GenericAPIView):
         serializer = ImageCreateListSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({
-                            'success': 'Add image success.'
-                        },
-                        status=status.HTTP_200_OK)
+        return Response(
+            {
+                'success': 'Add image success.'
+            },
+            status=status.HTTP_200_OK
+        )
+
+class ImageCreateView(generics.GenericAPIView):
+    serializer_class = ImageCreateSerializer
+    queryset = ImageStorage.objects.all() 
+    parser_classes = [MultiPartParser, FormParser]
+    
+    def post(self, request, format=None):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {
+                'success': 'Add image success.'
+            },
+            status=status.HTTP_200_OK
+        )
+            
+class ImageDeleteView(generics.GenericAPIView):
+    queryset = ImageStorage.objects.all()
+    
+    def delete(self, request, *args, **kwargs):
+        pass

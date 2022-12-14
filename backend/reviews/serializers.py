@@ -36,6 +36,19 @@ class ImageCreateListSerializer(serializers.Serializer):
             image = ImageStorage.objects.create(id=id, review=review, image=image)
         return 'success'
 
+class ImageCreateSerializer(serializers.Serializer):
+    review_id = serializers.CharField(max_length=10)
+    image = serializers.ImageField()
+
+    class Meta:
+        fields = ['review_id', 'image']
+    
+    def create(self, validated_data):
+        id = str(uuid.uuid4().int)[:9]
+        review_id = validated_data.get('review_id')
+        review = get_object_or_404(Review, id=review_id)
+        return ImageStorage.objects.create(id=id, review=review, image=validated_data.get('image'))
+
 class ImageViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = ImageStorage
