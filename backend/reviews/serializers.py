@@ -21,21 +21,6 @@ class ImageStorageSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         return attrs
 
-class ImageCreateSerializer(serializers.Serializer):
-    review_id = serializers.CharField(max_length=10)
-    images = serializers.ImageField()
-
-    class Meta:
-        fields = ['review_id', 'images']  
-    
-    def create(self, validated_data):
-        id = str(uuid.uuid4().int)[:9]
-        review = get_object_or_404(Review, id=validated_data.get('review_id'))
-        return ImageStorage.objects.create(
-            id=id, 
-            review=review, 
-            image=validated_data.get('image'))
-
 class ImageCreateListSerializer(serializers.Serializer):
     review_id = serializers.CharField(max_length=10)
     images = serializers.ListField(child=serializers.ImageField())
@@ -44,13 +29,11 @@ class ImageCreateListSerializer(serializers.Serializer):
         fields = ['review_id', 'images']  
     
     def create(self, validated_data):
+        review_id = validated_data.get('review_id')
+        review = get_object_or_404(Review, id=review_id)
         for image in validated_data.get('images'):
-            data = dict()
-            data['review_id'] = validated_data.get('review_id')
-            data['image'] = image
-            serializer = ImageCreateSerializer(data=data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+            id = str(uuid.uuid4().int)[:9]
+            image = ImageStorage.objects.create(id=id, review=review, image=image)
         return 'success'
 
 class ImageViewSerializer(serializers.ModelSerializer):
@@ -83,7 +66,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         id = obj.id
         if ImageStorage.objects.filter(review__id=id).exists():
             images = ImageStorage.objects.filter(review__id=id)
-            serializer = ImageViewSerializer(images)
+            serializer = ImageViewSerializer(images, many=True)
             return serializer.data
 
         return None
@@ -94,7 +77,7 @@ class ReviewCreateSerializer(serializers.Serializer):
     location_id = serializers.CharField(max_length=10)
     rating = serializers.DecimalField(max_digits=2, decimal_places=1)
     trip_type_id = serializers.CharField(max_length=10)
-    trip_time = serializers.DateTimeField()
+    trip_time = serializers.DateField()
     title = serializers.CharField(max_length=255)
     content = serializers.CharField()
     

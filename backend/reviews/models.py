@@ -22,7 +22,7 @@ class Review(models.Model):
     review_date = models.DateTimeField(
         default=(datetime.utcnow() + timedelta(hours=7)))
     trip_time = models.DateField()
-    trip_type = models.OneToOneField(TripType, on_delete=models.DO_NOTHING)
+    trip_type = models.OneToOneField(TripType, on_delete=models.DO_NOTHING, unique=False)
     title = models.CharField(max_length=255)
     content = models.TextField(null=True)
 
@@ -30,4 +30,4 @@ class Review(models.Model):
 class ImageStorage(models.Model):
     id = models.CharField(max_length=10, primary_key=True)
     review = models.ForeignKey(Review, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to=generate_unique_name('review_image'))
+    image = models.ImageField()

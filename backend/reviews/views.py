@@ -3,7 +3,6 @@ from .serializers import (
     ReviewSerializer,
     ImageStorageSerializer,
     ReviewCreateSerializer,
-    ImageCreateSerializer, 
     ImageCreateListSerializer,
 )
 from users.serializers import UserSerializer
@@ -93,17 +92,10 @@ class ImageCreateView(generics.GenericAPIView):
     queryset = ImageStorage.objects.all()
     parser_classes = [MultiPartParser, FormParser]
 
-    def post(self, request, *args, **kwargs):
-        review_id = request.data.pop('review_id')
-        data = dict()
-        
-        if request.data.get('images'):
-            for image in request.data.get('images'):
-                data['review_id'] = review_id
-                data['images'] = image
-                serializer = ImageCreateSerializer(data=data)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
+    def post(self, request, format=None):
+        serializer = ImageCreateListSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response({
                             'success': 'Add image success.'
                         },
