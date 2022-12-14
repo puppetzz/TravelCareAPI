@@ -22,7 +22,7 @@ class Review(models.Model):
     review_date = models.DateTimeField(
         default=(datetime.utcnow() + timedelta(hours=7)))
     trip_time = models.DateField()
-    trip_type = models.OneToOneField(TripType, on_delete=models.DO_NOTHING, unique=False)
+    trip_type = models.ForeignKey(TripType, on_delete=models.DO_NOTHING)
     title = models.CharField(max_length=255)
     content = models.TextField(null=True)
 
