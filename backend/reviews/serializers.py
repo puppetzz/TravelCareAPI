@@ -146,8 +146,8 @@ class ReviewUpdateSerializer(serializers.Serializer):
         fields = [
             'id',
             'rating',
-            'trip_type_id',
             'trip_time',
+            'trip_type_id',
             'title',
             'content'
         ]
@@ -164,4 +164,9 @@ class ReviewUpdateSerializer(serializers.Serializer):
         content = validated_data.get('content')
 
         instance.rating = rating
-        return 
+        instance.trip_time = trip_time
+        instance.trip_type = trip_type
+        instance.title = title
+        instance.content = content
+        instance.save()
+        return instance

@@ -5,6 +5,7 @@ from .serializers import (
     ReviewCreateSerializer,
     ImageCreateListSerializer,
     ImageCreateSerializer,
+    ReviewUpdateSerializer,
 )
 from users.serializers import UserSerializer
 from .models import TripType, Review, ImageStorage
@@ -150,4 +151,14 @@ class ImageDeleteView(generics.GenericAPIView):
         )
         
 class ReviewUpdateView(generics.GenericAPIView):
-    pass
+    serializer_class = ReviewUpdateSerializer
+    queryset = Review.objects.all()
+
+    def patch(self, request):
+        id = request.data.get('id')
+        review = get_object_or_404(Review, id=id)
+        serializer = self.serializer_class(review, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        review = serializer.save()
+        serializer = ReviewSerializer(review)
+        return Response(serializer.data, status=status.HTTP_200_OK)
