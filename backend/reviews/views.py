@@ -162,3 +162,25 @@ class ReviewUpdateView(generics.GenericAPIView):
         review = serializer.save()
         serializer = ReviewSerializer(review)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class ReviewDeleteView(generics.GenericAPIView):
+    queryset = Review.objects.all()
+    
+    def delete(self, request, *args, **kwargs):
+        id = kwargs.get('id')
+        if not self.get_queryset().filter(id=id).exists():
+            return Response(
+                {
+                    'error': 'Review does not exist.'
+                },
+                status=status.HTTP_200_OK
+            )
+        
+        review = Review.objects.get(id=id)
+        review.delete()
+        return Response(
+            {
+                'success': 'Delete review successfully.'
+            },
+            status=status.HTTP_200_OK
+        )

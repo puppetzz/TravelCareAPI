@@ -7,6 +7,7 @@ from .views import (
     ImageCreateView,
     ImageDeleteView,
     ReviewUpdateView,
+    ReviewDeleteView,
 )
 
 urlpatterns = [
@@ -23,4 +24,5 @@ urlpatterns = [
     path('create-image/', ImageCreateView.as_view(), name='create-images'),
     path('delete-image/<str:image_id>', ImageDeleteView.as_view(), name='delete-image'),
     path('update-review/', ReviewUpdateView.as_view(), name='update-review'),
+    path('delete-review/<str:id>', ReviewDeleteView.as_view(), name='delete-review'),
 ]
