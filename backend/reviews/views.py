@@ -61,16 +61,33 @@ class ReviewGetView(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         location_id = kwargs.get('location_id')
         review_id = kwargs.get('review_id')
+        user_id = kwargs.get('user_id')
 
         if not location_id:
             if not review_id:
+                if user_id:
+                    if not Review.objects.filter(user__account__id=user_id).exists():
+                        return Response(
+                            {
+                                'error': 'User has no reviews yet.'
+                            },
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
+                    reviews = self.get_queryset().filter(user__account__id=user_id)
+                    serializer = self.serializer_class(reviews, many=True)
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+
                 reviews = self.get_queryset()
                 serializer = self.serializer_class(reviews, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
+                
             
             review = get_object_or_404(Review, id=review_id)
             serializer = self.serializer_class(review)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
+                
         
         reviews = self.get_queryset().filter(location__id=location_id)
         serializer = self.serializer_class(reviews, many=True)
@@ -122,4 +139,12 @@ class ImageDeleteView(generics.GenericAPIView):
     queryset = ImageStorage.objects.all()
     
     def delete(self, request, *args, **kwargs):
-        pass
+        id = kwargs.get('image_id')
+        image = get_object_or_404(ImageStorage, id=id)
+        image.delete()
+        return Response(
+            {
+                'success': 'Delete Image Successfully.'
+            },
+            status=status.HTTP_200_OK
+        )

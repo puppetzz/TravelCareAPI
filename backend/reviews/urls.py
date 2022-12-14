@@ -15,7 +15,8 @@ urlpatterns = [
     path('get-images/<str:review_id>', ImageStorageView.as_view(), name='get-images-by-review'),
     path('get-all-reviews/', ReviewGetView.as_view(), name='get-all-review'),
     path('get-review/<str:review_id>', ReviewGetView.as_view(), name='get-review'),
-    path('get-reviews/<str:location_id>', ReviewGetView.as_view(), name='get-review-by-location'),
+    path('get-reviews-by-location/<str:location_id>', ReviewGetView.as_view(), name='get-review-by-location'),
+    path('get-reviews-by-user/<str:user_id>', ReviewGetView.as_view(), name='get-review-by-user'),
     path('create-review/', ReviewCreateView.as_view(), name='create-review'),
     path('create-images/', ImageCreateView.as_view(), name='create-image'),
 ]
