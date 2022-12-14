@@ -6,6 +6,8 @@ from address.serializers import (
 )
 import uuid
 from django.shortcuts import get_object_or_404
+from django.db.models import Avg
+from reviews.models import Review
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,6 +17,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class LocationSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     address = AddressGetSerializer()
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Location
@@ -27,6 +30,10 @@ class LocationSerializer(serializers.ModelSerializer):
             'price_level',
             'description',
         ]
+    
+    def get_rating(self, obj):
+        id = obj.id
+        return round(Review.objects.aggregate(Avg('rating')).get('rating__avg'), 1)
 
 class LocationCreateSerializer(serializers.Serializer):
     country = serializers.CharField(max_length=10)
@@ -34,7 +41,6 @@ class LocationCreateSerializer(serializers.Serializer):
     district = serializers.CharField(max_length=10)
     street_address = serializers.CharField(max_length=255)
     name = serializers.CharField(max_length=255)
-    rating = serializers.DecimalField(max_digits=2, decimal_places=1)
     category = serializers.CharField(max_length=10)
     price_level = serializers.IntegerField(required=False)
     description = serializers.CharField(allow_blank=True, required=False)
@@ -46,7 +52,6 @@ class LocationCreateSerializer(serializers.Serializer):
             'district',
             'street_address',
             'name',
-            'rating',
             'category',
             'price_level',
             'description',
@@ -69,7 +74,6 @@ class LocationCreateSerializer(serializers.Serializer):
         
         
         name = validated_data.get('name')
-        rating = validated_data.get('rating')
         category_id = validated_data.get('category')
         category = get_object_or_404(Category, id=category_id)
         
@@ -85,7 +89,6 @@ class LocationCreateSerializer(serializers.Serializer):
             id=id,
             address=address,
             name=name,
-            rating=rating,
             category=category,
             price_level=price_level,
             description=description
