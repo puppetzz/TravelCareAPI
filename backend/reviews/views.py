@@ -148,3 +148,6 @@ class ImageDeleteView(generics.GenericAPIView):
             },
             status=status.HTTP_200_OK
         )
+        
+class ReviewUpdateView(generics.GenericAPIView):
+    pass

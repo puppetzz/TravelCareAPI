@@ -79,7 +79,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         id = obj.id
         if ImageStorage.objects.filter(review__id=id).exists():
             images = ImageStorage.objects.filter(review__id=id)
-            serializer = ImageViewSerializer(images, many=True)
+            serializer = ImageStorageSerializer(images, many=True)
             return serializer.data
 
         return None
@@ -133,3 +133,35 @@ class ReviewCreateSerializer(serializers.Serializer):
             content=validated_data.get('content')
         )
         
+    
+class ReviewUpdateSerializer(serializers.Serializer):
+    id = serializers.CharField(max_length=10)
+    rating = serializers.DecimalField(max_digits=2, decimal_places=1)
+    trip_type_id = serializers.CharField(max_length=10)
+    trip_time = serializers.DateField()
+    title = serializers.CharField(max_length=255)
+    content = serializers.CharField()
+    
+    class Meta:
+        fields = [
+            'id',
+            'rating',
+            'trip_type_id',
+            'trip_time',
+            'title',
+            'content'
+        ]
+    
+    def validate(self, attrs):
+        return attrs
+
+    def update(self, instance, validated_data):
+        rating = validated_data.get('rating')
+        trip_type_id = validated_data.get('trip_type_id')
+        trip_type = get_object_or_404(TripType, id=trip_type_id)
+        trip_time = validated_data.get('trip_time')
+        title = validated_data.get('title')
+        content = validated_data.get('content')
+
+        instance.rating = rating
+        return 

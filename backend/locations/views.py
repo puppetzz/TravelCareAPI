@@ -9,6 +9,8 @@ from rest_framework import generics, status, mixins
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from address.models import Country, Province, District
+from reviews.models import ImageStorage
+from reviews.serializers import ImageStorageSerializer
 
 class CategoryListView(generics.ListAPIView):
     serializer_class = CategorySerializer
@@ -166,3 +168,22 @@ class LocationCreateView(generics.GenericAPIView):
             },
             status=status.HTTP_200_OK
         )
+        
+class LocationGetImageView(generics.GenericAPIView):
+    serializer_class = ImageStorageSerializer
+    queryset = ImageStorage.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        location_id = kwargs.get('location_id')
+
+        if not ImageStorage.objects.filter(review__location__id=location_id).exists():
+            return Response(
+                {
+                    'error': 'Location have no images'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        images = self.get_queryset().filter(review__location__id=location_id)
+        serializer = self.serializer_class(images, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

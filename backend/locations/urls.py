@@ -7,6 +7,7 @@ from .views import (
     LocationListByProvinceView,
     LocationListByDistrictView,
     LocationView,
+    LocationGetImageView,
 )
 
 urlpatterns = [
@@ -21,4 +22,5 @@ urlpatterns = [
     path('get-location-with-district/<str:country_id>/<str:province_id>/<str:district_id>/<str:category_id>', LocationListByDistrictView.as_view(), name='get-location-with-district-category'),
     path('get-all-location/', LocationListByCategoryView.as_view(), name='get-all-location'),
     path('create-location/', LocationCreateView.as_view(), name='create-location'),
+    path('get-images/<str:location_id>', LocationGetImageView.as_view(), name='get-images'),
 ]
