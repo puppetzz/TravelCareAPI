@@ -82,11 +82,9 @@ class ReviewCreateView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({
-            'success': 'Add review success.'
-            },
-            status=status.HTTP_200_OK)
+        review = serializer.save()
+        review_serializer = ReviewSerializer(review)
+        return Response(review_serializer.data, status=status.HTTP_200_OK)
 
 class ImageCreateView(generics.GenericAPIView):
     queryset = ImageStorage.objects.all()
