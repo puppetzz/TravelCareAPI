@@ -33,6 +33,8 @@ class LocationSerializer(serializers.ModelSerializer):
     
     def get_rating(self, obj):
         id = obj.id
+        if not Review.objects.filter(location__id=id).exists():
+            return 0.0
         return round(Review.objects.aggregate(Avg('rating')).get('rating__avg'), 1)
 
 class LocationCreateSerializer(serializers.Serializer):

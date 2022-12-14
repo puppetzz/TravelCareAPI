@@ -128,7 +128,7 @@ class UserUpdateSerializer(serializers.Serializer):
                 address_serializer.save()
             else:
                 raise Exception({'error': 'address does not exist.'})
-        else:
+        elif attrs.get('country'):
             address_serializer = AddressCreateSerializer(data=address)
             address_serializer.is_valid(raise_exception=True)
             user.address = address_serializer.save()
