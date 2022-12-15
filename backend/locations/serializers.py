@@ -35,7 +35,7 @@ class LocationSerializer(serializers.ModelSerializer):
         id = obj.id
         if not Review.objects.filter(location__id=id).exists():
             return 0.0
-        return round(Review.objects.aggregate(Avg('rating')).get('rating__avg'), 1)
+        return round(Review.objects.filter(location__id=id).aggregate(Avg('rating')).get('rating__avg'), 1)
 
 class LocationCreateSerializer(serializers.Serializer):
     country = serializers.CharField(max_length=10)
